@@ -1,4 +1,4 @@
 .ipynb_checkpoints/
-modeling/modeler
+modeler/modeler
 *.csv
 .DS_Store
