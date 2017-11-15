@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/nordicdyno/measure-streams/modeling"
 )
 
 func TestInitialState(t *testing.T) {
@@ -53,4 +55,41 @@ func TestTestMedian(t *testing.T) {
 		dw.measures(c.values)
 		assert.Equal(t, c.median, dw.getMedian(), fmt.Sprintf("step N %v", step))
 	}
+}
+
+// * Sliding window size for Test 2 is 100
+// * Sliding window size for Test 3 is 1000
+// * Sliding window size for Test 4 is 10000
+
+var result float64
+
+func benchWindow(b *testing.B, size int) {
+	b.StopTimer()
+	data, err := modeling.GenParetoN(0.02, 0.98, 100*1000)
+	if err != nil {
+		b.Error(err)
+	}
+
+	dw := delaysWindow{size: size}
+
+	for _, elem := range data {
+		dw.measure(elem)
+	}
+
+	b.StartTimer()
+	for n := 0; n < b.N; n++ {
+		result = dw.getMedian()
+	}
+}
+
+func BenchmarkWindow100(b *testing.B) {
+	benchWindow(b, 100)
+}
+
+func BenchmarkWindow1k(b *testing.B) {
+	benchWindow(b, 1000)
+}
+
+func BenchmarkWindow10k(b *testing.B) {
+	benchWindow(b, 10000)
 }
