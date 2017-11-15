@@ -1,0 +1,4 @@
+.ipynb_checkpoints/
+modeling/modeler
+*.csv
+.DS_Store
