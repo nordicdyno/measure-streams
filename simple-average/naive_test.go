@@ -10,26 +10,26 @@ import (
 )
 
 func TestNaiveInitialState(t *testing.T) {
-	var dw delaysWindow
-	if len(dw.values()) > 0 {
+	var wa naiveWindowedAvg
+	if len(wa.values()) > 0 {
 		t.Error("initial values failed")
 	}
 }
 
 func TestNaiveTest1(t *testing.T) {
-	dw := delaysWindow{size: 3}
+	wa := naiveWindowedAvg{windowSize: 3}
 	for step, c := range measurecases {
-		dw.measure(c.value)
-		values := dw.values()
+		wa.measure(c.value)
+		values := wa.values()
 		assert.Equal(t, c.expect, values, fmt.Sprintf("step N %v", step))
 	}
 }
 
 func TestNaiveTestMedian(t *testing.T) {
 	for step, c := range mediancases {
-		dw := delaysWindow{size: 1000}
-		dw.measures(c.values)
-		assert.Equal(t, c.median, dw.getMedian(), fmt.Sprintf("step N %v", step))
+		wa := naiveWindowedAvg{windowSize: 1000}
+		wa.measures(c.values)
+		assert.Equal(t, c.median, wa.getMedian(), fmt.Sprintf("step N %v", step))
 	}
 }
 
@@ -46,15 +46,15 @@ func benchNaiveWindow(b *testing.B, size int) {
 		b.Error(err)
 	}
 
-	dw := delaysWindow{size: size}
+	wa := naiveWindowedAvg{windowSize: size}
 
 	for _, elem := range data {
-		dw.measure(elem)
+		wa.measure(elem)
 	}
 
 	b.StartTimer()
 	for n := 0; n < b.N; n++ {
-		result = dw.getMedian()
+		result = wa.getMedian()
 	}
 }
 
