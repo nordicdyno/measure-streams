@@ -35,10 +35,10 @@ func (wa *sortedWindowedAvg) measures(values []float64) {
 
 func (wa *sortedWindowedAvg) addSorted(value float64) {
 	if len(wa.sorted) < cap(wa.sorted) {
+		// in case if buffer not full, adds new value:
 		// 1) find index for new value
 		// 2) append sorted array with new value
-		// 3) if found index is not last shift all index:end-1 to right inde
-		//    and put new value ins place
+		// 3) if found index is not last shift all index:end-1 to right  and put new value in place
 		newindex := sort.SearchFloat64s(wa.sorted, value)
 		was := len(wa.sorted)
 		wa.sorted = append(wa.sorted, value)
@@ -49,11 +49,15 @@ func (wa *sortedWindowedAvg) addSorted(value float64) {
 		return
 	}
 
+	// in case if buffer full, removes old and adds new value
+	// 0) figure out which value to remove
+	// 1) if value == removed value, END
+	// 2) find rmindex of removed value and newindex for new value
+	// 3) if newindex == rmindex: store value on rmindex, END
 	rmvalue := wa.measurements[wa.pointer]
 	if rmvalue == value {
 		return
 	}
-
 	rmindex := sort.SearchFloat64s(wa.sorted, rmvalue)
 	newindex := sort.SearchFloat64s(wa.sorted, value)
 	if newindex == rmindex {
@@ -61,32 +65,25 @@ func (wa *sortedWindowedAvg) addSorted(value float64) {
 		return
 	}
 
+	// 4) if rmindex < newindex
+	// 4.a) check special case newindex-1 == rmindex, if true save value with rmindex, END
+	// 4.b) shift elements in dapasone [rmindex+1:newindex-1] to left,
+	//      store value in newindex-1, END
 	if rmindex < newindex {
-		// just save
 		if newindex-1 == rmindex {
 			wa.sorted[rmindex] = value
 			return
 		}
-		// if rmindex < newindex -> shift elements from [rmindex+1:newindex-1] to [rmindex:newindex-2]
-		// fmt.Printf("shift [%v:%v) -> [%v:%v)\n", rmindex+1, newindex, rmindex, newindex-1)
 		copy(wa.sorted[rmindex:newindex-1], wa.sorted[rmindex+1:newindex])
 		wa.sorted[newindex-1] = value
 		return
 	}
-	// rmindex > newindex
-	// fmt.Printf("shift [%v:%v] -> [%v:%v]\n", newindex, rmindex, newindex+1, rmindex+1)
+
+	// 5) if rmindex > index2
+	// shift elements from diapason [newindex:rmindex-1] to right,
+	// save new value in newindex
 	copy(wa.sorted[newindex+1:rmindex+1], wa.sorted[newindex:rmindex])
 	wa.sorted[newindex] = value
-	// 0) figure out of removed value
-	// 1) if value == removed value, nothing to do
-	// 2) find rmindex of removed value
-	// 3) find newindex for new value
-	// 4.a) if rmindex == newindex just store value on index1
-	// 4.b) if rmindex < newindex shift elements from [rmindex+1:newindex-1] to [rmindex:newindex-2]
-	//      and store value in index2-1
-	// 4c) if rmindex > index2 shift elements from [newindex:rmindex-1] to [newindex+1:rmindex]
-	//
-	//    and place new value in place
 }
 
 func (wa *sortedWindowedAvg) measure(value float64) {
