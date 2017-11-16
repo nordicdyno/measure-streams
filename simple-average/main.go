@@ -30,11 +30,11 @@ func main() {
 		r = file
 	}
 
-	dw := delaysWindow{size: *windowsize}
-	scanAndPrintResults(&dw, r, os.Stdout)
+	wa := naiveWindowedAvg{windowSize: *windowsize}
+	scanAndPrintResults(&wa, r, os.Stdout)
 }
 
-func scanAndPrintResults(dw *delaysWindow, r io.Reader, w io.Writer) {
+func scanAndPrintResults(wa *naiveWindowedAvg, r io.Reader, w io.Writer) {
 	scanner := bufio.NewScanner(r)
 	for i := 1; scanner.Scan(); i++ {
 		measure := scanner.Text()
@@ -46,8 +46,8 @@ func scanAndPrintResults(dw *delaysWindow, r io.Reader, w io.Writer) {
 		}
 		// fmt.Fprintln(w, "Line", i)
 		// fmt.Fprintf(w, "parsed: %v\n", f)
-		dw.measure(f)
-		fmt.Fprintf(w, "%v\n", dw.getMedian())
+		wa.measure(f)
+		fmt.Fprintf(w, "%v\n", wa.getMedian())
 		// fmt.Fprintf(w, "median> %v\n", dw.getMedian())
 	}
 }
